@@ -7,8 +7,15 @@ const viewsRouter = require('./routes/views.router.js');
 const http = require('http');
 const { Server } = require('socket.io');
 require("./database.js");
+const session = require('express-session');
 
 const app = express();
+app.use(session({
+    secret: 'tu_secreto_aqui',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Cambia a true si estás usando HTTPS
+}));
 const server = http.createServer(app);
 const io = new Server(server);
 const PORT = 8080;
@@ -18,10 +25,15 @@ const PORT = 8080;
 const productManager = new ProductManager();
 const cartManager = new CartManager();
 
-
 // Configurar express-handlebars
-const exphbs = require('express-handlebars');
-app.engine('handlebars', exphbs.engine());
+const { engine } = require('express-handlebars');
+app.engine('handlebars', engine({
+    defaultLayout: 'main',
+    runtimeOptions: {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true
+    }
+}));
 app.set('view engine', 'handlebars');
 app.set('views', './src/views');
 
@@ -35,29 +47,37 @@ app.use('/api/products', require('./routes/products.router')(productManager));
 app.use('/', viewsRouter);
 
 // Rutas de carritos
-// app.use('/api/carts', require('./routes/cart.router')(cartManager));
-
-const cartRouter = require('./routes/cart.router.js')
-app.use('/api/carts', cartRouter(cartManager)) // Rutas de carritos
+const cartRouter = require('./routes/cart.router.js');
+app.use('/api/carts', cartRouter(cartManager, productManager));
 
 // Configurar socket.io
 io.on('connection', async (socket) => {
     console.log('Nuevo cliente conectado');
-
-    // Se emite la lista de productos al cliente cuando se conecta
-    socket.emit("products", await productManager.getProducts());
+    const products = await productManager.getProducts();
+    socket.emit("products", products.docs);
 
     // Se escucha eventos del cliente para agregar un producto
     socket.on('addProduct', async (newProduct) => {
-        // Se agrega el nuevo producto y emite la lista actualizada a todos los clientes
+        // Se agrega el nuevo producto y se emite la lista actualizada a todos los clientes
         await productManager.addProduct(newProduct);
         io.emit('products', await productManager.getProducts());
     });
 
     socket.on('deleteProduct', async (id) => {
-        await productManager.deleteProduct(id);
-        const products = await productManager.getProducts();
-        io.emit('updateProducts', products);
+        try {
+            const deletedProduct = await productManager.deleteProduct(id);
+            if (deletedProduct) {
+                console.log("Producto eliminado correctamente:", deletedProduct);
+                const products = await productManager.getProducts();
+                io.emit('updateProducts', products);
+            } else {
+                console.log("No se pudo eliminar el producto con ID:", id);
+                socket.emit('deleteError', 'No se pudo eliminar el producto');
+            }
+        } catch (error) {
+            console.error('Error al eliminar el producto:', error);
+            socket.emit('deleteError', 'Error al eliminar el producto: ' + error.message);
+        }
     });
 
     socket.on('disconnect', () => {

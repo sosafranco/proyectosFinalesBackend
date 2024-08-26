@@ -1,16 +1,73 @@
 const express = require('express');
 const router = express.Router();
-// const ProductManager = require('../dao/db/product-manager-db.js');
-// const productManager = new ProductManager('../dao/db/fs/data/products.json');
+const ProductManager = require('../dao/db/product-manager-db.js');
+const productManager = new ProductManager();
 
 router.get('/products', async (req, res) => {
-    const products = await productManager.getProducts();
-    res.render('index', { title: 'Store', products });
+    try {
+        const { limit = 10, page = 1, sort, query } = req.query;
+        const options = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            sort: sort ? { price: sort === 'asc' ? 1 : -1 } : undefined
+        };
+        
+        let filter = {};
+        if (query) {
+            filter = { category: query };
+        }
+
+        const result = await productManager.getProducts(filter, options);
+
+        res.render('index', {
+            payload: result.docs,
+            page: result.page,
+            totalPages: result.totalPages,
+            hasPrevPage: result.hasPrevPage,
+            hasNextPage: result.hasNextPage,
+            prevLink: result.hasPrevPage ? `/products?page=${result.prevPage}&limit=${limit}&sort=${sort}&query=${query}` : null,
+            nextLink: result.hasNextPage ? `/products?page=${result.nextPage}&limit=${limit}&sort=${sort}&query=${query}` : null
+        });
+    } catch (error) {
+        console.error('Error getting the products', error);
+        res.status(500).render('error', { message: 'Error interno del servidor' });
+    }
 });
 
 router.get('/realtimeproducts', async (req, res) => {
-    res.render('realTimeProducts', { title: 'Real Time Products' });
+    try {
+        const products = await productManager.getProducts();
+        res.render('realTimeProducts', { products });
+    } catch (error) {
+        console.error('Error getting the products', error);
+        res.status(500).render('error', { message: 'Error interno del servidor' });
+    }
+});
+
+const CartManager = require('../dao/db/cart-manager-db.js');
+const cartManager = new CartManager();
+
+router.get('/carts/:cid', async (req, res) => {
+    try {
+        const cartId = req.params.cid;
+        const cart = await cartManager.getCartById(cartId);
+        const cartTotal = cart.products.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+        res.render('cart', { products: cart.products, cartTotal });
+    } catch (error) {
+        console.error('Error retrieving the cart', error);
+        res.status(500).render('error', { message: 'Error interno del servidor' });
+    }
+});
+
+router.get('/products/:pid', async (req, res) => {
+    try {
+        const productId = req.params.pid;
+        const product = await productManager.getProductById(productId);
+        res.render('productDetails', { product });
+    } catch (error) {
+        console.error('Error getting the product details', error);
+        res.status(500).render('error', { message: 'Error interno del servidor' });
+    }
 });
 
 module.exports = router;
-

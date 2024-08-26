@@ -5,12 +5,43 @@ module.exports = (productManager) => {
     // Ruta GET /api/products - se listan todos los productos con o sin un limite de muestra
     router.get('/', async (req, res) => {
         try {
-            const limit = parseInt(req.query.limit);
-            const products = await productManager.getProductsLimit(limit);
-            res.json(products);
+            const { limit = 10, page = 1, sort, query } = req.query;
+            const options = {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                sort: sort ? { price: sort === 'asc' ? 1 : -1 } : undefined
+            };
+            
+            let filter = {};
+            if (query) {
+                filter = { category: query };
+            }
+
+            const result = await productManager.getProducts(filter, options);
+
+            const totalPages = result.totalPages;
+            const prevPage = result.prevPage;
+            const nextPage = result.nextPage;
+            const hasPrevPage = result.hasPrevPage;
+            const hasNextPage = result.hasNextPage;
+            const prevLink = hasPrevPage ? `/api/products?page=${prevPage}&limit=${limit}&sort=${sort}&query=${query}` : null;
+            const nextLink = hasNextPage ? `/api/products?page=${nextPage}&limit=${limit}&sort=${sort}&query=${query}` : null;
+
+            res.json({
+                status: 'success',
+                payload: result.docs,
+                totalPages,
+                prevPage,
+                nextPage,
+                page: result.page,
+                hasPrevPage,
+                hasNextPage,
+                prevLink,
+                nextLink
+            });
         } catch (error) {
             console.error('Error getting the products', error);
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({ status: 'error', error: 'Internal Server Error' });
         }
     });
 
@@ -45,7 +76,7 @@ module.exports = (productManager) => {
     // Ruta PUT /api/products/:pid - se actualiza un producto
     router.put('/:pid', async (req, res) => {
         try {
-            const productId = parseInt(req.params.pid);
+            const productId = req.params.pid;
             const updatedProduct = req.body;
             await productManager.updateProduct(productId, updatedProduct);
             res.json({ message: 'Product updated successfully' });

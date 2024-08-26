@@ -1,4 +1,10 @@
-const ProductModel = require("../models/product.model.js")
+const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
+const ProductModel = require("../models/product.model.js");
+
+// Obtenemos el esquema del modelo
+const productSchema = ProductModel.schema;
+productSchema.plugin(mongoosePaginate);
 
 class ProductManager {
 
@@ -37,7 +43,6 @@ class ProductManager {
                 category,
                 price,
                 thumbnails,
-                code,
                 stock,
                 status,
             } = newObject;
@@ -48,7 +53,6 @@ class ProductManager {
                 !description ||
                 !category ||
                 !price ||
-                !code ||
                 !stock ||
                 !status
             ) {
@@ -56,15 +60,11 @@ class ProductManager {
                 return;
             }
 
-            // Se valida que no se repita el campo "code"
-            const existeCodigo = await ProductModel.findOne({ code: code });
-            if (existeCodigo) {
-                console.log("el codigo debe ser unico")
-                return;
-            }
+            // Genera un código único
+            const code = Date.now().toString();
 
             // Se agrega un producto con id autoincrementable
-            const newProduct = ProductModel({
+            const newProduct = new ProductModel({
                 title,
                 description,
                 category,
@@ -77,19 +77,20 @@ class ProductManager {
             // Se guarda nuevo producto
             await newProduct.save();
 
-            // Se guarda el array actualizado en el archivo
+            return newProduct;
         } catch (error) {
             console.error('Error adding the product:', error);
-            return { error: 'Internal Server Error' };
+            throw error;
         }
     }
 
-    async getProducts() {
+    async getProducts(filter = {}, options = {}) {
         try {
-            const arrayProducts = await ProductModel.find();
-            return arrayProducts;
+            const result = await ProductModel.paginate(filter, options);
+            return result;
         } catch (error) {
-            console.log("error al leer el archivo", error);
+            console.log("Error al obtener los productos", error);
+            throw error;
         }
     }
 
@@ -120,16 +121,31 @@ class ProductManager {
         }
     }
 
+    // async deleteProduct(id) {
+    //     try {
+    //         const deletedProduct = await ProductModel.findByIdAndDelete(id);
+    //         if (!deletedProduct) {
+    //             console.log("no existe ese producto para eliminar")
+    //             return null;
+    //         }
+    //         return deletedProduct;
+    //     } catch (error) {
+    //         console.error('Error deleting the product', error);
+    //     }
+    // }
+
     async deleteProduct(id) {
         try {
-            const deletedProduct = await ProductModel.findByIdAndDelete(id);
+            const objectId = new mongoose.Types.ObjectId(id);
+            const deletedProduct = await ProductModel.findByIdAndDelete(objectId);
             if (!deletedProduct) {
-                console.log("no existe ese producto para eliminar")
+                console.log("No existe ese producto para eliminar");
                 return null;
             }
             return deletedProduct;
         } catch (error) {
             console.error('Error deleting the product', error);
+            throw error; // Propagar el error para manejarlo en el nivel superior
         }
     }
 
