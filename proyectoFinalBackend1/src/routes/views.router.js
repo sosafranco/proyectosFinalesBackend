@@ -11,7 +11,7 @@ router.get('/products', async (req, res) => {
             limit: parseInt(limit),
             sort: sort ? { price: sort === 'asc' ? 1 : -1 } : undefined
         };
-        
+
         let filter = {};
         if (query) {
             filter = { category: query };
