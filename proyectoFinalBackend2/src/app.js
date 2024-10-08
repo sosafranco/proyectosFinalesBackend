@@ -1,28 +1,49 @@
-const express = require('express');
-const ProductManager = require('../src/dao/db/product-manager-db.js');
-const CartManager = require('../src/dao/db/cart-manager-db.js');
-const viewsRouter = require('./routes/views.router.js');
-const http = require('http');
-const { Server } = require('socket.io');
-require("./database.js");
-const session = require('express-session');
+import express from 'express';
+import ProductManager from '../src/dao/db/product-manager-db.js';
+import CartManager from '../src/dao/db/cart-manager-db.js';
+import viewsRouter from './routes/views.router.js';
+import http from 'http';
+import { Server } from 'socket.io';
+import './database.js';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
 
 const app = express();
-app.use(session({
-    secret: 'tu_secreto_aqui',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Cambia a true si estás usando HTTPS
-}));
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('./src/public'));
+app.use(
+    session({
+        secret: "secretCoder",
+        resave: true,
+        saveUninitialized: true,
+        store: MongoStore.create({
+            mongoUrl:
+                "mongodb+srv://francososa:estoesboca12@cluster0.5txnf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+            ttl: 100,
+        }),
+    })
+);
+
+//Configuracion de passport
+import passport from './config/passport.config.js';
+import cookieParser from 'cookie-parser';
+import sessionsRouter from './routes/sessions.router.js';
+
+app.use(cookieParser());
+app.use(passport.initialize());
+app.use('/api/sessions', sessionsRouter);
+
 const server = http.createServer(app);
 const io = new Server(server);
-const PORT = 8080;
+const PORT = 3000;
 
 const productManager = new ProductManager();
 const cartManager = new CartManager();
 
 // Configurar express-handlebars
-const { engine } = require('express-handlebars');
+import { engine } from 'express-handlebars';
 app.engine('handlebars', engine({
     defaultLayout: 'main',
     runtimeOptions: {
@@ -33,17 +54,13 @@ app.engine('handlebars', engine({
 app.set('view engine', 'handlebars');
 app.set('views', './src/views');
 
-// Middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static('./src/public'));
 
 // Rutas de productos y vistas
-app.use('/api/products', require('./routes/products.router')(productManager));
+app.use('/api/products', (await import('./routes/products.router.js')).default(productManager));
 app.use('/', viewsRouter);
 
 // Rutas de carritos
-const cartRouter = require('./routes/cart.router.js');
+const cartRouter = (await import('./routes/cart.router.js')).default;
 app.use('/api/carts', cartRouter(cartManager, productManager));
 
 // Configurar socket.io

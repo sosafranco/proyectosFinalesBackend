@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const mongoosePaginate = require('mongoose-paginate-v2');
-const ProductModel = require("../models/product.model.js");
+import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
+import ProductModel from '../models/product.model.js';
 
 // Obtenemos el esquema del modelo
 const productSchema = ProductModel.schema;
@@ -117,4 +117,4 @@ class ProductManager {
     }
 }
 
-module.exports = ProductManager;
+export default ProductManager;
