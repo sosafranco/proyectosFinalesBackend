@@ -7,8 +7,11 @@ import { Server } from 'socket.io';
 import './database.js';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+// import configObjet from './config/config.js';
 
 const app = express();
+// const {PORT} = configObjet;
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
