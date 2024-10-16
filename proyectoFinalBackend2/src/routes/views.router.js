@@ -2,6 +2,7 @@ import express from 'express';
 import ProductManager from '../dao/db/product-manager-db.js';
 import CartManager from '../dao/db/cart-manager-db.js';
 import passport from 'passport';
+
 const router = express.Router();
 const productManager = new ProductManager();
 const cartManager = new CartManager();

@@ -48,7 +48,10 @@ export default (cartManager, productManager) => {
         const cartId = req.params.cid;
         const productId = req.params.pid;
         try {
-            const updatedCart = await cartManager.removeProductFromCart(cartId, productId);
+            const updatedCart = await cartManager.removeProductFromCart(
+                cartId,
+                productId
+            );
             res.json(updatedCart.products);
         } catch (error) {
             console.error('Error removing the product from the cart', error);
@@ -59,9 +62,12 @@ export default (cartManager, productManager) => {
     // Ruta PUT /api/carts/:cid - actualiza todos los productos del carrito
     router.put('/:cid', async (req, res) => {
         const cartId = req.params.cid;
-        const products = req.body.products;  // Debería ser un array de productos
+        const products = req.body.products; // Debería ser un array de productos
         try {
-            const updatedCart = await cartManager.updateCartProducts(cartId, products);
+            const updatedCart = await cartManager.updateCartProducts(
+                cartId,
+                products
+            );
             res.json({ message: 'Cart updated successfully', updatedCart });
         } catch (error) {
             console.error('Error updating the cart', error);
@@ -75,10 +81,20 @@ export default (cartManager, productManager) => {
         const productId = req.params.pid;
         const quantity = req.body.quantity;
         try {
-            const updatedCart = await cartManager.updateProductQuantity(cartId, productId, quantity);
-            res.json({ message: 'Product quantity updated successfully', updatedCart });
+            const updatedCart = await cartManager.updateProductQuantity(
+                cartId,
+                productId,
+                quantity
+            );
+            res.json({
+                message: 'Product quantity updated successfully',
+                updatedCart,
+            });
         } catch (error) {
-            console.error('Error updating the product quantity in the cart', error);
+            console.error(
+                'Error updating the product quantity in the cart',
+                error
+            );
             res.status(500).json({ error: 'Internal Server Error' });
         }
     });
@@ -88,7 +104,10 @@ export default (cartManager, productManager) => {
         const cartId = req.params.cid;
         try {
             const updatedCart = await cartManager.clearCart(cartId);
-            res.json({ message: 'All products removed from cart', updatedCart });
+            res.json({
+                message: 'All products removed from cart',
+                updatedCart,
+            });
         } catch (error) {
             console.error('Error clearing the cart', error);
             res.status(500).json({ error: 'Internal Server Error' });
@@ -107,7 +126,10 @@ export default (cartManager, productManager) => {
                 req.session.cartId = cartId;
             }
 
-            const updatedCart = await cartManager.addProductToCart(cartId, productId);
+            const updatedCart = await cartManager.addProductToCart(
+                cartId,
+                productId
+            );
             res.json(updatedCart);
         } catch (error) {
             console.error('Error adding product to cart:', error);

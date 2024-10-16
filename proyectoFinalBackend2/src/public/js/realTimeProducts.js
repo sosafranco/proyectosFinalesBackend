@@ -40,6 +40,7 @@ const getProductData = () => {
         description: document.getElementById('product-description').value,
         category: document.getElementById('product-category').value,
         price: document.getElementById('product-price').value,
+        // thumbnails: document.getElementById("thumbnails").value,
         code: document.getElementById('product-code').value,
         stock: document.getElementById('product-stock').value,
         status: document.getElementById('product-status').value,
