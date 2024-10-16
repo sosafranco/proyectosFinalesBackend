@@ -1,8 +1,28 @@
 import mongoose from 'mongoose';
+import configObject from './config/config.js';
+const { mongo_url } = configObject;
 
-mongoose
-    .connect(
-        'mongodb+srv://francososa:estoesboca12@cluster0.5txnf.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=Cluster0'
-    )
-    .then(() => console.log('Connected to DB'))
-    .catch(() => console.log('Error connecting to DB'));
+// mongoose
+//     .connect(mongo_url)
+//     .then(() => console.log('Connected to DB'))
+//     .catch((error) => console.error('Error connecting to DB:', error));
+
+class baseDeDatos {
+    static#instancia;
+
+    constructor() {
+        mongoose.connect(mongo_url);
+    }
+
+    static getInstancia() {
+        if (this.#instancia) {
+            console.log('Instancia ya creada');
+            return this.#instancia;
+        }
+
+        this.#instancia = new baseDeDatos();
+        console.log('Conexión a la base de datos exitosa');
+    }
+}
+
+export default baseDeDatos;

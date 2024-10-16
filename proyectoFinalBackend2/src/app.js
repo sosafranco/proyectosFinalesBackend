@@ -4,12 +4,18 @@ import CartManager from '../src/dao/db/cart-manager-db.js';
 import viewsRouter from './routes/views.router.js';
 import http from 'http';
 import { Server } from 'socket.io';
-import './database.js';
+// import './database.js';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import configObject from './config/config.js';
+import cors from 'cors';
 
-const app = express();
+//Singleton
+import baseDeDatos from './database.js';
+const instanciaBD = baseDeDatos.getInstancia();
+
 // Middleware
+const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('./src/public'));
@@ -20,11 +26,12 @@ app.use(
         saveUninitialized: true,
         store: MongoStore.create({
             mongoUrl:
-                "mongodb+srv://francososa:estoesboca12@cluster0.5txnf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+                configObject.mongo_url,
             ttl: 100,
         }),
     })
 );
+app.use(cors());
 
 // Configurar Passport
 import passport from './config/passport.config.js';
@@ -34,6 +41,7 @@ import sessionsRouter from './routes/sessions.router.js';
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use('/api/sessions', sessionsRouter);
+
 
 const server = http.createServer(app);
 const io = new Server(server);
