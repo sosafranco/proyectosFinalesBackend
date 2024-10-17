@@ -4,7 +4,6 @@ import CartManager from '../src/dao/db/cart-manager-db.js';
 import viewsRouter from './routes/views.router.js';
 import http from 'http';
 import { Server } from 'socket.io';
-// import './database.js';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import configObject from './config/config.js';

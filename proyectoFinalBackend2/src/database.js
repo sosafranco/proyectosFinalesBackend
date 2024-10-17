@@ -2,11 +2,6 @@ import mongoose from 'mongoose';
 import configObject from './config/config.js';
 const { mongo_url } = configObject;
 
-// mongoose
-//     .connect(mongo_url)
-//     .then(() => console.log('Connected to DB'))
-//     .catch((error) => console.error('Error connecting to DB:', error));
-
 class baseDeDatos {
     static#instancia;
 
