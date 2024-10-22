@@ -8,10 +8,15 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import configObject from './config/config.js';
 import cors from 'cors';
+import nodemailer from 'nodemailer';
 
 //Singleton
 import baseDeDatos from './database.js';
 const instanciaBD = baseDeDatos.getInstancia();
+
+
+
+
 
 // Middleware
 const app = express();
@@ -32,6 +37,34 @@ app.use(
 );
 app.use(cors());
 
+
+// Configurar nodemailer
+
+const transport = nodemailer.createTransport({
+    service: 'gmail',
+    port: 587,
+    auth: {
+        user: 'fm.sosa01@gmail.com',
+        pass: 'ukfi ifxe oczm zszj'
+    }
+})
+
+//ruta para enviar mail
+
+app.get("/mail", async (req, res) => {
+    try {
+        await transport.sendMail({
+            from: "Tech Store <fm.sosa00@outlook.com>",
+            to: "fm.sosa01@gmail.com",
+            subject: "Prueba Nodemailer",
+            html: "<h1>Probando nodemailer anashe</h1>"
+        })
+        res.send("Mail enviado!");
+    } catch (error) {
+        res.status(500).send("No se envió un carajo el mail!");
+    }
+})
+
 // Configurar Passport
 import passport from './config/passport.config.js';
 import cookieParser from 'cookie-parser';
@@ -39,6 +72,7 @@ import sessionsRouter from './routes/sessions.router.js';
 
 app.use(cookieParser());
 app.use(passport.initialize());
+app.use(passport.session());
 app.use('/api/sessions', sessionsRouter);
 
 

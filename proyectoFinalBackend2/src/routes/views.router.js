@@ -2,6 +2,7 @@ import express from 'express';
 import ProductManager from '../dao/db/product-manager-db.js';
 import CartManager from '../dao/db/cart-manager-db.js';
 import passport from 'passport';
+import { isAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 const productManager = new ProductManager();
@@ -38,7 +39,7 @@ router.get('/products', async (req, res) => {
     }
 });
 
-router.get('/realtimeproducts', async (req, res) => {
+router.get('/realtimeproducts', isAdmin, async (req, res) => {
     try {
         const products = await productManager.getProducts();
         res.render('realTimeProducts', { products });

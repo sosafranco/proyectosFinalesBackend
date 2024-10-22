@@ -7,7 +7,7 @@ import UserModel from '../dao/models/user.model.js';
 const cookieExtractor = req => {
     let token = null;
     if (req && req.cookies) {
-        token = req.cookies['jwt'];
+        token = req.cookies['coderCookieToken'];
     }
     return token;
 };
@@ -55,18 +55,22 @@ passport.use('login', new LocalStrategy({
 
 const opts = {
     jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
-    secretOrKey: 'tu_secreto_jwt'
+    secretOrKey: 'coderhouse'
 };
 
 passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+    console.log('JWT Payload:', jwt_payload);
     try {
         const user = await UserModel.findById(jwt_payload.sub);
         if (user) {
+            console.log('Usuario encontrado:', user);
             return done(null, user);
         } else {
+            console.log('Usuario no encontrado');
             return done(null, false);
         }
     } catch (error) {
+        console.error('Error en la estrategia JWT:', error);
         return done(error, false);
     }
 }));
