@@ -1,44 +1,71 @@
-import CartModel from "../models/cart.model.js";
-import ProductModel from "../models/product.model.js";
+import cartRepository from '../../repositories/cart.repository.js';
 
 class CartManager {
-
     async createCart() {
         try {
-            const newCart = new CartModel({ products: [] });
-            await newCart.save();
-            return newCart;
+            return await cartRepository.createCart();
         } catch (error) {
-            console.error('Error creating cart:', error);
+            console.error('Error creating the cart:', error);
             throw error;
         }
     }
 
     async getCartById(cartId) {
         try {
-            const cart = await CartModel.findById(cartId).populate('products.product');
-            return cart;
+            return await cartRepository.getCartById(cartId);
         } catch (error) {
-            console.error('Error getting cart:', error);
+            console.error('Error getting the cart:', error);
             throw error;
         }
     }
 
-    async addProductToCart(cartId, productId, quantity = 1) {
+    async addProductToCart(cartId, productId, productManager, quantity = 1) {
         try {
-            const cart = await CartModel.findById(cartId);
-            const productIndex = cart.products.findIndex(item => item.product.toString() === productId);
+            const product = await productManager.getProductById(productId);
+            if (!product) {
+                throw new Error(`Product with id ${productId} does not exist`);
+            }
 
-            if (productIndex !== -1) {
-                cart.products[productIndex].quantity += quantity;
+            const cart = await this.getCartById(cartId);
+            const productInCart = cart.products.find((p) => p.product === productId);
+
+            if (productInCart) {
+                productInCart.quantity += quantity;
             } else {
                 cart.products.push({ product: productId, quantity });
             }
 
-            await cart.save();
+            await this.saveCarts();
             return cart;
         } catch (error) {
-            console.error('Error adding product to cart:', error);
+            console.error('Error adding a product to the cart', error);
+            throw error;
+        }
+    }
+
+    async removeProductFromCart(cartId, productId) {
+        try {
+            return await cartRepository.removeProductFromCart(cartId, productId);
+        } catch (error) {
+            console.error('Error removing a product from the cart', error);
+            throw error;
+        }
+    }
+
+    async updateCart(cartId, newProducts) {
+        try {
+            return await cartRepository.updateCart(cartId, newProducts);
+        } catch (error) {
+            console.error('Error updating the cart', error);
+            throw error;
+        }
+    }
+
+    async clearCart(cartId) {
+        try {
+            return await cartRepository.clearCart(cartId);
+        } catch (error) {
+            console.error('Error clearing the cart', error);
             throw error;
         }
     }

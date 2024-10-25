@@ -76,10 +76,10 @@ class CartManager {
             return cart;
         } catch (error) {
             console.error('Error adding a product to the cart', error);
+            throw error;
         }
     }
 
-    // Método para eliminar un producto del carrito
     async removeProductFromCart(cartId, productId) {
         try {
             const cart = await this.getCartById(cartId);
@@ -95,10 +95,10 @@ class CartManager {
             return cart;
         } catch (error) {
             console.error('Error removing a product from the cart', error);
+            throw error;
         }
     }
 
-    // Método para actualizar todos los productos del carrito
     async updateCartProducts(cartId, newProducts) {
         try {
             const cart = await this.getCartById(cartId);
@@ -107,10 +107,10 @@ class CartManager {
             return cart;
         } catch (error) {
             console.error('Error updating the cart products', error);
+            throw error;
         }
     }
 
-    // Método para actualizar la cantidad de un producto específico en el carrito
     async updateProductQuantity(cartId, productId, quantity) {
         try {
             const cart = await this.getCartById(cartId);
@@ -126,10 +126,10 @@ class CartManager {
             return cart;
         } catch (error) {
             console.error('Error updating the product quantity', error);
+            throw error;
         }
     }
 
-    // Método para eliminar todos los productos del carrito
     async clearCart(cartId) {
         try {
             const cart = await this.getCartById(cartId);
@@ -138,6 +138,7 @@ class CartManager {
             return cart;
         } catch (error) {
             console.error('Error clearing the cart', error);
+            throw error;
         }
     }
 }

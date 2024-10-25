@@ -26,22 +26,7 @@ module.exports = (cartManager, productManager) => {
     });
 
     // Ruta POST /api/carts/:cid/product/:pid - se agregan productos a distintos carritos
-    router.post('/:cid/product/:pid', async (req, res) => {
-        const cartId = req.params.cid;
-        const productId = req.params.pid;
-        const quantity = req.body.quantity || 1;
-        try {
-            const updateCart = await cartManager.addProductToCart(
-                cartId,
-                productId,
-                quantity
-            );
-            res.json(updateCart.products);
-        } catch (error) {
-            console.error('Error adding a product to the cart', error);
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    });
+    router.post('/:cid/product/:pid', cartController.addProductToCart);
 
     // Ruta DELETE /api/carts/:cid/products/:pid - elimina un producto específico del carrito
     router.delete('/:cid/products/:pid', async (req, res) => {

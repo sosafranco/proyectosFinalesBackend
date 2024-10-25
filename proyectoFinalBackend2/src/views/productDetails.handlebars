@@ -11,7 +11,26 @@
 
 <script>
     function addToCart(productId) {
-        // falta implementar la lógica para agregar al carrito
-        console.log('Producto agregado al carrito:', productId);
+        const cartId = document.getElementById('cartId').value; // Asegúrate de que el cartId esté disponible
+        fetch(`/api/carts/${cartId}/product/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ quantity: 1 }), // Puedes ajustar la cantidad según sea necesario
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('Producto agregado al carrito:', data);
+                alert('Producto agregado al carrito');
+            } else {
+                alert(`Error: ${data.message}`);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Error al agregar el producto al carrito');
+        });
     }
 </script>

@@ -13,6 +13,14 @@ class userRepository {
     async getUserByEmail(email) {
         return await UserDao.findOne({ email });
     }
+
+    async updateUser(id, userData) {
+        return await UserDao.update(id, userData);
+    }
+
+    async deleteUser(id) {
+        return await UserDao.delete(id);
+    }
 }
 
 export default new userRepository();

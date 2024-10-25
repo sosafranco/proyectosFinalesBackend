@@ -2,13 +2,13 @@ import express from 'express';
 import ProductManager from '../dao/db/product-manager-db.js';
 import CartManager from '../dao/db/cart-manager-db.js';
 import passport from 'passport';
-import { isAdmin } from '../middleware/auth.js';
+import { isAdmin, isUser } from '../middleware/auth.js';
 
 const router = express.Router();
 const productManager = new ProductManager();
 const cartManager = new CartManager();
 
-router.get('/products', async (req, res) => {
+router.get('/products', isUser, async (req, res) => {
     try {
         const { limit = 10, page = 1, sort, query } = req.query;
         const options = {

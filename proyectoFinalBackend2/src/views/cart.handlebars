@@ -21,52 +21,55 @@
 <p>El carrito está vacío</p>
 {{/if}}
 
+<input type="hidden" id="cartId" value="{{cartId}}">
+
 <script>
+    const cartId = document.getElementById('cartId').value;
+
+    console.log('Cart ID:', cartId);
+
     function removeFromCart(productId) {
-        const cartId = // se obtiene el ID del carrito actua
-            fetch(`/api/carts/${cartId}/products/${productId}`, {
-                method: 'DELETE',
+        fetch(`/api/carts/${cartId}/products/${productId}`, {
+            method: 'DELETE',
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Producto eliminado del carrito:', data);
+                location.reload();
             })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Producto eliminado del carrito:', data);
-                    location.reload(); // Recargar la página para reflejar los cambios
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    alert('Error al eliminar el producto del carrito');
-                });
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error al eliminar el producto del carrito');
+            });
     }
 
     function updateQuantity(productId, newQuantity) {
-        const cartId = // se obtiene el ID del carrito actual
-            fetch(`/api/carts/${cartId}/products/${productId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ quantity: parseInt(newQuantity) }),
+        fetch(`/api/carts/${cartId}/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ quantity: parseInt(newQuantity) }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Cantidad actualizada:', data);
+                location.reload();
             })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Cantidad actualizada:', data);
-                    location.reload(); // Recargar la página para reflejar los cambios
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    alert('Error al actualizar la cantidad');
-                });
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error al actualizar la cantidad');
+            });
     }
 
     function clearCart() {
-        const cartId = /* obtener el ID del carrito actual */;
         fetch(`/api/carts/${cartId}`, {
             method: 'DELETE',
         })
             .then(response => response.json())
             .then(data => {
                 console.log('Carrito vaciado:', data);
-                location.reload(); // Recargar la página para reflejar los cambios
+                location.reload();
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -75,6 +78,27 @@
     }
 
     function finalizePurchase() {
-        // Falta implementar la lógica para finalizar la compra
+        fetch(`/api/carts/${cartId}/purchase`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(`Compra realizada con éxito. Ticket: ${data.ticket.code}`);
+                if (data.failedProducts && data.failedProducts.length > 0) {
+                    alert(`Algunos productos no pudieron ser comprados debido a falta de stock: ${data.failedProducts.join(', ')}`);
+                }
+                location.reload();
+            } else {
+                alert(`Error: ${data.message}`);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Error al finalizar la compra');
+        });
     }
 </script>

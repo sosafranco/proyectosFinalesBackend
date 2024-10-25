@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import ProductModel from '../models/product.model.js';
+import ProductDTO from '../../dto/product.dto.js';
+import productRepository from '../../repositories/product.repository.js';
 
 // Obtenemos el esquema del modelo
 const productSchema = ProductModel.schema;
@@ -10,47 +12,7 @@ class ProductManager {
 
     async addProduct(newObject) {
         try {
-            let {
-                title,
-                description,
-                category,
-                price,
-                thumbnails,
-                stock,
-                status,
-            } = newObject;
-
-            // Se valida que todos los campos sean obligatorios
-            if (
-                !title ||
-                !description ||
-                !category ||
-                !price ||
-                !stock ||
-                !status
-            ) {
-                console.error('All fields are mandatory.');
-                return;
-            }
-
-            // Genera un código único
-            const code = Date.now().toString();
-
-            // Se agrega un producto con id autoincrementable
-            const newProduct = new ProductModel({
-                title,
-                description,
-                category,
-                price,
-                thumbnails,
-                code,
-                stock,
-                status: true,
-            });
-            // Se guarda nuevo producto
-            await newProduct.save();
-
-            return newProduct;
+            return await productRepository.createProduct(newObject);
         } catch (error) {
             console.error('Error adding the product:', error);
             throw error;
@@ -59,61 +21,38 @@ class ProductManager {
 
     async getProducts(filter = {}, options = {}) {
         try {
-            const result = await ProductModel.paginate(filter, options);
-            return result;
+            return await productRepository.getProducts(filter, options);
         } catch (error) {
-            console.log("Error al obtener los productos", error);
+            console.error('Error getting the products', error);
             throw error;
         }
     }
 
     async getProductById(id) {
         try {
-            const foundProduct = await ProductModel.findById(id)
-            if (!foundProduct) {
-                console.error('Product not found. ID:', id);
-            } else {
-                console.error('Product found:', foundProduct);
-                return foundProduct;
-            }
+            return await productRepository.getProductById(id);
         } catch (error) {
-            console.error('Error reading the file', error);
+            console.error('Error getting the product', error);
+            throw error;
         }
     }
 
-    async updateProduct(id, updatedProduct) {
+    async updateProduct(id, updatedFields) {
         try {
-            const updateProduct = await ProductModel.findByIdAndUpdate(id, updatedProduct);
-            if (!updateProduct) {
-                console.log("no se encuentra el producto id que estas buscando")
-                return null;
-            }
-            return updateProduct;
+            return await productRepository.updateProduct(id, updatedFields);
         } catch (error) {
             console.error('Error updating the product', error);
+            throw error;
         }
     }
 
     async deleteProduct(id) {
         try {
-            const objectId = new mongoose.Types.ObjectId(id);
-            const deletedProduct = await ProductModel.findByIdAndDelete(objectId);
-            if (!deletedProduct) {
-                console.log("No existe ese producto para eliminar");
-                return null;
-            }
-            return deletedProduct;
+            return await productRepository.deleteProduct(id);
         } catch (error) {
             console.error('Error deleting the product', error);
-            throw error; // Propagar el error para manejarlo en el nivel superior
+            throw error;
         }
-    }
-
-    async getProductsLimit(limit) {
-        if (limit) {
-            return this.products.slice(0, limit);
-        }
-        return this.products;
     }
 }
 

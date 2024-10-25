@@ -1,4 +1,4 @@
-import ProductModel from '../models/product.model.js';
+import ProductModel from './models/product.model.js';
 
 class ProductDAO {
     async findById(id) {
@@ -15,10 +15,14 @@ class ProductDAO {
     }
 
     async update(id, productData) {
-        return await ProductModel.findByIdAndUpdate(id, productData);
+        return await ProductModel.findByIdAndUpdate(id, productData, { new: true });
     }
     async delete(id) {
         return await ProductModel.findByIdAndDelete(id);
+    }
+
+    async paginate(options) {
+        return await ProductModel.paginate({}, options);
     }
 }
 
