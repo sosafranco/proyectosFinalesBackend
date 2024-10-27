@@ -1,4 +1,5 @@
 import userService from "../services/user.service.js";
+import cartService from "../services/cart.service.js"; // Importar el servicio de carrito
 import jwt from 'jsonwebtoken';
 import UserDTO from "../dto/user.dto.js";
 
@@ -7,18 +8,24 @@ class UserController {
         const { first_name, last_name, email, password, age } = req.body;
 
         try {
-            const existeUsuario = await userService.getUserByEmail(email);
+            const existingUser = await userService.getUserByEmail(email);
 
-            if (existeUsuario) {
+            if (existingUser) {
                 return res.status(400).render('register', { error: 'El usuario ya existe' });
             }
 
-            const nuevoUsuario = await userService.registerUser({first_name, last_name, email, age, password});
+            const newCart = await cartService.createCart();
+            const newUser = await userService.registerUser({ first_name, last_name, email, password, age, newCart });
+
+            // Crear un carrito para el usuario
+            // newUser.cartId = newCart.id;
+            // await userService.updateUser(newUser._id, { cartId: newCart.id });
 
             const token = jwt.sign({
-                usuario: `${nuevoUsuario.first_name} ${nuevoUsuario.last_name}`,
-                email: nuevoUsuario.email,
-                role: nuevoUsuario.role,
+                usuario: `${newUser.first_name} ${newUser.last_name}`,
+                email: newUser.email,
+                cart: newUser.cartId,
+                role: newUser.role,
             }, "coderhouse", { expiresIn: '1h' });
 
             res.cookie("coderCookieToken", token, { maxAge: 3600000, httpOnly: true });
@@ -33,19 +40,24 @@ class UserController {
         const { email, password } = req.body;
 
         try {
-            const usuario = await userService.loginUser(email, password);
+            const user = await userService.loginUser(email, password);
+
+            if (!user) {
+                return res.status(401).render('login', { error: 'Credenciales incorrectas' });
+            }
 
             const token = jwt.sign({
-                sub: usuario._id,
-                usuario: `${usuario.first_name} ${usuario.last_name}`,
-                email: usuario.email,
-                role: usuario.role,
+                sub: user._id,
+                usuario: `${user.first_name} ${user.last_name}`,
+                email: user.email,
+                role: user.role,
             }, "coderhouse", { expiresIn: '1h' });
 
             res.cookie("coderCookieToken", token, { maxAge: 3600000, httpOnly: true });
-            return res.redirect("/api/sessions/current");
+            res.redirect("/api/sessions/current");
         } catch (error) {
-            return res.status(400).render('login', { error: error.message });
+            console.error('Error al iniciar sesión:', error);
+            res.status(500).render('login', { error: 'Error al iniciar sesión' });
         }
     }
 

@@ -28,11 +28,12 @@ class CartController {
             const cart = await cartService.getCartById(cid);
             if (!cart) return res.status(404).json({ error: 'Cart not found' });
 
+            const parsedQuantity = parseInt(quantity, 10);
             const existingProduct = cart.products.find(item => item.product.toString() === pid);
             if (existingProduct) {
-                existingProduct.quantity += quantity;
+                existingProduct.quantity += parsedQuantity;
             } else {
-                cart.products.push({ product: pid, quantity });
+                cart.products.push({ product: pid, quantity: parsedQuantity });
             }
             await cartService.updateCart(cid, cart);
             res.json(cart);

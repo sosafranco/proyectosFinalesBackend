@@ -14,8 +14,8 @@ class UserService {
             userData.password = createHash(userData.password);
 
             // Se crea un nuevo carrito
-            const nuevoCarrito = await cartService.createCart();
-            userData.cart = nuevoCarrito._id; // Asignar el ID del carrito
+            // const nuevoCarrito = await cartService.createCart();
+            // userData.cartId = nuevoCarrito.id; // Asignar el ID del carrito
 
             const nuevoUsuario = await userRepository.createUser(userData);
             console.log('Usuario creado:', nuevoUsuario); // Verifica que el usuario se haya creado
@@ -25,6 +25,10 @@ class UserService {
             console.error('Error en registerUser:', error);
             throw error;
         }
+    }
+
+    async updateUser(id, userData) {
+        return await userRepository.updateUser(id, userData);
     }
 
     async loginUser(email, password) {

@@ -5,8 +5,8 @@ import UserModel from '../dao/models/user.model.js';
 import { createHash, isValidPassword } from '../utils/util.js';
 import generateToken from '../utils/jsonwebtoken.js';
 
-const router = Router();
 const userController = new UserController();
+const router = Router();
 
 router.use((req, res, next) => {
     console.log('Datos de la solicitud:', req.body);

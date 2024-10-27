@@ -2,11 +2,10 @@ import CartDao from '../dao/cart.dao.js';
 import CartDTO from '../dto/cart.dto.js';
 
 class CartRepository {
-    async createCart(userId) {
-        const cart = await CartDao.save({ userId, products: [] });
+    async createCart() {
+        const cart = await CartDao.save({ products: [] });
         return new CartDTO(cart);
     }
-
     async getCartById(id) {
         const cart = await CartDao.findById(id);
         return cart ? new CartDTO(cart) : null;

@@ -8,8 +8,8 @@
             <p>{{this.description}}</p>
             <p>Precio: ${{this.price}}</p>
             <p>Categoría: {{this.category}}</p>
-            <a href="/products/{{this._id}}">Ver detalles</a>
-            <button onclick="addToCart('{{this._id}}')">Agregar al carrito</button>
+            <a href="/products/{{this.id}}">Ver detalles</a>
+            <button onclick="addToCart('{{this.id}}', '{{cartId}}')">Agregar al carrito</button>
         </div>
         {{/each}}
         </div>
@@ -26,8 +26,7 @@
     </div>
 
     <script>
-        async function addToCart(productId) {
-            const cartId = document.getElementById('cartId').value; // Asegúrate de que el cartId esté disponible
+        async function addToCart(productId, cartId) {
             try {
                 const response = await fetch(`/api/carts/${cartId}/product/${productId}`, {
                     method: 'POST',
@@ -45,4 +44,7 @@
             }
         }
     </script>
+    <span>
+        cartId: {{cartId}}
+    </span>
 </div>

@@ -9,6 +9,7 @@ const productManager = new ProductManager();
 const cartManager = new CartManager();
 
 router.get('/products', isUser, async (req, res) => {
+    const userCartId = req.user.cart;
     try {
         const { limit = 10, page = 1, sort, query } = req.query;
         const options = {
@@ -25,6 +26,7 @@ router.get('/products', isUser, async (req, res) => {
         const result = await productManager.getProducts(filter, options);
 
         res.render('index', {
+            cartId: userCartId,
             payload: result.docs,
             page: result.page,
             totalPages: result.totalPages,
@@ -49,7 +51,7 @@ router.get('/realtimeproducts', isAdmin, async (req, res) => {
     }
 });
 
-router.get('/carts/:cid', async (req, res) => {
+router.get('/carts/:cid', isUser, async (req, res) => {
     try {
         const cartId = req.params.cid;
         const cart = await cartManager.getCartById(cartId);
@@ -61,11 +63,14 @@ router.get('/carts/:cid', async (req, res) => {
     }
 });
 
-router.get('/products/:pid', async (req, res) => {
+
+//detalles del producto
+router.get('/products/:pid', isUser, async (req, res) => {
+    const userCartId = req.user.cart;
     try {
         const productId = req.params.pid;
         const product = await productManager.getProductById(productId);
-        res.render('productDetails', { product });
+        res.render('productDetails', { product, cartId: userCartId });
     } catch (error) {
         console.error('Error getting the product details', error);
         res.status(500).render('error', { message: 'Error interno del servidor' });

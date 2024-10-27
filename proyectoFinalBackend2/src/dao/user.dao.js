@@ -9,9 +9,13 @@ class UserDao {
         return await UserModel.findOne(query);
     }
 
-    async save(data) {
-        const user = new UserModel(data);
+    async save(userData) {
+        const user = new UserModel(userData);
         return await user.save();
+    }
+
+    async update(id, userData) {
+        return await UserModel.findByIdAndUpdate(id, userData, { new: true });
     }
 }
 
