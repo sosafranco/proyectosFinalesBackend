@@ -9,8 +9,8 @@ const productManager = new ProductManager();
 const cartManager = new CartManager();
 
 router.get('/products', isUser, async (req, res) => {
-    const userCartId = req.user.cart;
     try {
+        const userCartId = req.user.cart;
         const { limit = 10, page = 1, sort, query } = req.query;
         const options = {
             page: parseInt(page),
@@ -26,17 +26,19 @@ router.get('/products', isUser, async (req, res) => {
         const result = await productManager.getProducts(filter, options);
 
         res.render('index', {
-            cartId: userCartId,
-            payload: result.docs,
-            page: result.page,
+            payload: result.docs, // Asegúrate de que estés pasando los productos como 'payload'
             totalPages: result.totalPages,
+            prevPage: result.prevPage,
+            nextPage: result.nextPage,
+            page: result.page,
             hasPrevPage: result.hasPrevPage,
             hasNextPage: result.hasNextPage,
+            cartId: userCartId,
             prevLink: result.hasPrevPage ? `/products?page=${result.prevPage}&limit=${limit}&sort=${sort}&query=${query}` : null,
             nextLink: result.hasNextPage ? `/products?page=${result.nextPage}&limit=${limit}&sort=${sort}&query=${query}` : null
         });
     } catch (error) {
-        console.error('Error getting the products', error);
+        console.error('Error getting products:', error);
         res.status(500).render('error', { message: 'Error interno del servidor' });
     }
 });

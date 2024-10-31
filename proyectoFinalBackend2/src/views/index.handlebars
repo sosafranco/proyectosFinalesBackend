@@ -28,19 +28,32 @@
     <script>
         async function addToCart(productId, cartId) {
             try {
+                // Verificar que tengamos cartId
+                if (!cartId) {
+                    alert('Debe iniciar sesión para agregar productos al carrito');
+                    window.location.href = '/login';
+                    return;
+                }
+
                 const response = await fetch(`/api/carts/${cartId}/product/${productId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ quantity: 1 }), // Puedes ajustar la cantidad según sea necesario
+                    body: JSON.stringify({ quantity: 1 }),
+                    credentials: 'include' // Para enviar cookies
                 });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
                 console.log('Producto agregado al carrito:', data);
                 alert('Producto agregado al carrito');
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al agregar el producto al carrito');
+                alert('Error al agregar el producto al carrito. Por favor, inicie sesión.');
             }
         }
     </script>

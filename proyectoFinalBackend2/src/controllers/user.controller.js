@@ -8,23 +8,24 @@ class UserController {
         const { first_name, last_name, email, password, age } = req.body;
 
         try {
-            const existingUser = await userService.getUserByEmail(email);
+            const newUser = await userService.registerUser({
+                first_name,
+                last_name,
+                email,
+                password,
+                age
+            });
 
-            if (existingUser) {
-                return res.status(400).render('register', { error: 'El usuario ya existe' });
+            // Verificar que el usuario tiene carrito
+            if (!newUser.cart) {
+                throw new Error('Error al asignar carrito al usuario');
             }
 
-            const newCart = await cartService.createCart();
-            const newUser = await userService.registerUser({ first_name, last_name, email, password, age, newCart });
-
-            // Crear un carrito para el usuario
-            // newUser.cartId = newCart.id;
-            // await userService.updateUser(newUser._id, { cartId: newCart.id });
-
             const token = jwt.sign({
+                sub: newUser._id,
                 usuario: `${newUser.first_name} ${newUser.last_name}`,
                 email: newUser.email,
-                cart: newUser.cartId,
+                cart: newUser.cart,
                 role: newUser.role,
             }, "coderhouse", { expiresIn: '1h' });
 
@@ -32,7 +33,7 @@ class UserController {
             res.redirect("/api/sessions/current");
         } catch (error) {
             console.error('Error al crear el usuario:', error);
-            res.status(500).render('register', { error: 'Error al crear el usuario' });
+            res.status(500).render('register', { error: error.message });
         }
     }
 

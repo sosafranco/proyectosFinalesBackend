@@ -24,9 +24,17 @@ class CartController {
     async addProductToCart(req, res) {
         const { cid, pid } = req.params;
         const { quantity = 1 } = req.body;
+
         try {
+            // Validar cartId
+            if (!cid) {
+                return res.status(400).json({ error: 'Cart ID is required' });
+            }
+
             const cart = await cartService.getCartById(cid);
-            if (!cart) return res.status(404).json({ error: 'Cart not found' });
+            if (!cart) {
+                return res.status(404).json({ error: 'Cart not found' });
+            }
 
             const parsedQuantity = parseInt(quantity, 10);
             const existingProduct = cart.products.find(item => item.product.toString() === pid);
@@ -38,6 +46,7 @@ class CartController {
             await cartService.updateCart(cid, cart);
             res.json(cart);
         } catch (error) {
+            console.error('Error:', error);
             res.status(500).json({ error: error.message });
         }
     }

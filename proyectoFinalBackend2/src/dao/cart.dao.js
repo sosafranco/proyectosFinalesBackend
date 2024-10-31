@@ -1,8 +1,9 @@
 import CartModel from "./models/cart.model.js";
+import Cart from './models/cart.model.js';
 
 class CartDao {
     async findById(id) {
-        return await CartModel.findById(id).populate('products.product', 'title price');
+        return await Cart.findById(id).populate('products.product', 'title price');
     }
 
     async save(cartData) {
@@ -11,11 +12,11 @@ class CartDao {
     }
 
     async update(id, cartData) {
-        return await CartModel.findByIdAndUpdate(id, cartData);
+        return await Cart.findByIdAndUpdate(id, cartData);
     }
 
     async delete(id) {
-        return await CartModel.findByIdAndDelete(id);
+        return await Cart.findByIdAndDelete(id);
     }
 }
 
